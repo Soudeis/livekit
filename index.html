@@ -7,7 +7,6 @@
   <script src="https://cdn.jsdelivr.net/npm/livekit-client/dist/livekit-client.umd.min.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-
     body {
       background: #000;
       font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
@@ -16,358 +15,286 @@
       position: relative;
     }
 
-    /* Vidéo principale (l'autre) */
-    #remote-wrap {
+    .video-slot {
       position: absolute;
-      inset: 0;
-      background: #1a1a1a;
-      transition: all 0.3s cubic-bezier(.4,0,.2,1);
-    }
-
-    #remote-wrap video {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .no-video {
-      width: 100%;
-      height: 100%;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      color: #555;
-    }
-
-    .avatar-big {
-      width: 100px;
-      height: 100px;
-      border-radius: 50%;
-      background: #2a2a2a;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 40px;
-    }
-
-    .no-video span {
-      font-size: 15px;
-      letter-spacing: 0.3px;
-    }
-
-    /* Timer en haut */
-    #timer {
-      position: absolute;
-      top: 52px;
-      left: 50%;
-      transform: translateX(-50%);
-      color: rgba(255,255,255,0.85);
-      font-size: 15px;
-      font-weight: 400;
-      letter-spacing: 0.5px;
-      z-index: 10;
-      display: none;
-    }
-
-    /* Nom de l'autre en haut */
-    #remote-name {
-      position: absolute;
-      top: 16px;
-      left: 50%;
-      transform: translateX(-50%);
-      color: #fff;
-      font-size: 17px;
-      font-weight: 600;
-      z-index: 10;
-      letter-spacing: -0.2px;
-    }
-
-    /* Notre vidéo en bas à droite (petite) */
-    #local-wrap {
-      position: absolute;
-      bottom: 140px;
-      right: 16px;
-      width: 110px;
-      height: 160px;
-      border-radius: 18px;
       overflow: hidden;
-      background: #2a2a2a;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.6);
-      cursor: pointer;
-      z-index: 20;
       transition: all 0.35s cubic-bezier(.4,0,.2,1);
-      border: 2px solid rgba(255,255,255,0.15);
     }
 
-    #local-wrap video {
-      width: 100%;
-      height: 100%;
+    .video-slot video {
+      width: 100%; height: 100%;
       object-fit: cover;
-      transform: scaleX(-1);
     }
 
-    /* État swappé : nous en grand, autre en petit */
-    body.swapped #remote-wrap {
-      inset: auto;
+    /* Slot grand (plein écran) */
+    .slot-main {
+      inset: 0;
+      border-radius: 0;
+      z-index: 5;
+      cursor: default;
+    }
+
+    /* Slot petit (pip) */
+    .slot-pip {
       bottom: 140px;
       right: 16px;
       width: 110px;
       height: 160px;
       border-radius: 18px;
-      overflow: hidden;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.6);
-      border: 2px solid rgba(255,255,255,0.15);
       z-index: 20;
+      cursor: pointer;
+      border: 2px solid rgba(255,255,255,0.2);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.6);
     }
 
-    body.swapped #local-wrap {
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      border-radius: 0;
-      border: none;
-      box-shadow: none;
-      bottom: 0;
-      right: 0;
+    .slot-pip:hover { border-color: rgba(255,255,255,0.45); }
+
+    .local-video { transform: scaleX(-1); }
+
+    .no-video-placeholder {
+      width: 100%; height: 100%;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 12px; background: #1a1a1a; color: #555;
+    }
+    .avatar-circle {
+      width: 90px; height: 90px; border-radius: 50%;
+      background: #2a2a2a;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 36px;
+    }
+    .no-video-placeholder span { font-size: 14px; }
+
+    #remote-name {
+      position: absolute; top: 16px; left: 50%;
+      transform: translateX(-50%);
+      color: #fff; font-size: 17px; font-weight: 600;
+      z-index: 10; display: none;
+      text-shadow: 0 1px 4px rgba(0,0,0,0.5);
     }
 
-    body.swapped #local-wrap video {
-      transform: scaleX(-1);
+    #timer {
+      position: absolute; top: 44px; left: 50%;
+      transform: translateX(-50%);
+      color: rgba(255,255,255,0.7); font-size: 14px;
+      z-index: 10; display: none;
     }
 
-    /* Barre de contrôles en bas */
     #controls {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
+      position: absolute; bottom: 0; left: 0; right: 0;
       height: 120px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      display: none;
+      align-items: center; justify-content: center;
       gap: 24px;
-      background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 100%);
+      background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%);
       z-index: 30;
       padding-bottom: 16px;
     }
 
     .ctrl-btn {
-      width: 56px;
-      height: 56px;
-      border-radius: 50%;
-      border: none;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: transform 0.15s, opacity 0.15s;
+      width: 56px; height: 56px; border-radius: 50%; border: none;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: transform 0.15s, background 0.2s;
       backdrop-filter: blur(10px);
     }
-
-    .ctrl-btn:active { transform: scale(0.9); }
-
-    .ctrl-btn.mute-mic { background: rgba(255,255,255,0.18); }
-    .ctrl-btn.mute-cam { background: rgba(255,255,255,0.18); }
-    .ctrl-btn.end-call  { background: #ff3b30; width: 68px; height: 68px; }
-    .ctrl-btn.off { background: rgba(255,255,255,0.08); opacity: 0.5; }
-
-    .ctrl-btn svg { width: 24px; height: 24px; fill: #fff; }
-    .ctrl-btn.end-call svg { width: 28px; height: 28px; }
+    .ctrl-btn:active { transform: scale(0.88); }
+    .ctrl-btn.normal { background: rgba(255,255,255,0.2); }
+    .ctrl-btn.off    { background: rgba(255,255,255,0.08); }
+    .ctrl-btn.end    { background: #ff3b30; width: 68px; height: 68px; }
+    .ctrl-btn svg    { width: 22px; height: 22px; fill: #fff; }
+    .ctrl-btn.end svg { width: 26px; height: 26px; }
+    .ctrl-btn.off svg { opacity: 0.4; }
 
     /* Écran de connexion */
     #connect-screen {
-      position: absolute;
-      inset: 0;
-      background: #000;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 16px;
-      z-index: 100;
-      padding: 32px;
+      position: absolute; inset: 0; background: #000;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 14px; z-index: 100; padding: 32px;
     }
-
-    #connect-screen h1 {
-      color: #fff;
-      font-size: 28px;
-      font-weight: 700;
-      margin-bottom: 8px;
-    }
-
+    #connect-screen h1 { color: #fff; font-size: 26px; font-weight: 700; margin-bottom: 4px; }
     #connect-screen input,
     #connect-screen textarea {
-      width: 100%;
-      max-width: 400px;
-      background: #1c1c1e;
-      border: 1px solid #3a3a3c;
-      border-radius: 12px;
-      color: #fff;
-      padding: 14px 16px;
-      font-size: 15px;
-      outline: none;
+      width: 100%; max-width: 400px;
+      background: #1c1c1e; border: 1px solid #3a3a3c;
+      border-radius: 12px; color: #fff;
+      padding: 14px 16px; font-size: 15px; outline: none;
     }
-
-    #connect-screen textarea { height: 90px; resize: none; }
-
+    #connect-screen textarea { height: 88px; resize: none; }
     #btn-join {
-      width: 100%;
-      max-width: 400px;
-      background: #25d366;
-      color: #fff;
-      border: none;
-      border-radius: 14px;
-      padding: 16px;
-      font-size: 17px;
-      font-weight: 600;
-      cursor: pointer;
-      margin-top: 8px;
+      width: 100%; max-width: 400px;
+      background: #25d366; color: #fff; border: none;
+      border-radius: 14px; padding: 16px;
+      font-size: 17px; font-weight: 600; cursor: pointer;
       transition: opacity 0.2s;
     }
-
     #btn-join:active { opacity: 0.8; }
-    #connect-screen .hint { color: #555; font-size: 13px; }
+    #connect-screen .hint { color: #555; font-size: 13px; text-align: center; }
   </style>
 </head>
 <body>
 
-  <!-- Écran de connexion -->
+  <!-- Écran connexion -->
   <div id="connect-screen">
     <h1>📹 LiveKit</h1>
-    <input id="url" value="wss://monlivekit.duckdns.org" placeholder="URL serveur" />
+    <input id="url" value="wss://monlivekit.duckdns.org" />
     <textarea id="token" placeholder="Colle ton token ici..."></textarea>
     <button id="btn-join">Rejoindre l'appel</button>
     <p class="hint">Appuie sur ta vidéo pour échanger les vues</p>
   </div>
 
-  <!-- Vue appel -->
-  <div id="remote-name" style="display:none"></div>
-  <div id="timer" style="display:none">00:00</div>
+  <!-- Noms / timer -->
+  <div id="remote-name"></div>
+  <div id="timer"></div>
 
-  <div id="remote-wrap">
-    <div class="no-video">
-      <div class="avatar-big">👤</div>
+  <!-- Slot A (commence en main) -->
+  <div class="video-slot slot-main" id="slotA">
+    <div class="no-video-placeholder">
+      <div class="avatar-circle">👤</div>
       <span>En attente...</span>
     </div>
   </div>
 
-  <div id="local-wrap"></div>
+  <!-- Slot B (commence en pip) -->
+  <div class="video-slot slot-pip" id="slotB" onclick="swapSlots()"></div>
 
-  <div id="controls" style="display:none">
-    <button class="ctrl-btn mute-mic" id="btn-mic" title="Micro">
+  <!-- Contrôles -->
+  <div id="controls">
+    <button class="ctrl-btn normal" id="btn-mic">
       <svg viewBox="0 0 24 24"><path d="M12 1a4 4 0 0 1 4 4v6a4 4 0 0 1-8 0V5a4 4 0 0 1 4-4zm-1.5 15.93A8 8 0 0 1 4.07 11H2a10 10 0 0 0 9 9.93V23h2v-2.07A10 10 0 0 0 22 11h-2.07a8 8 0 0 1-6.43 5.93z"/></svg>
     </button>
-    <button class="ctrl-btn end-call" id="btn-end" title="Raccrocher">
+    <button class="ctrl-btn end" id="btn-end">
       <svg viewBox="0 0 24 24"><path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1L6.6 10.8z"/></svg>
     </button>
-    <button class="ctrl-btn mute-cam" id="btn-cam" title="Caméra">
+    <button class="ctrl-btn normal" id="btn-cam">
       <svg viewBox="0 0 24 24"><path d="M17 10.5V7a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3.5l4 4v-11l-4 4z"/></svg>
     </button>
   </div>
 
-  <script>
-    const { Room, RoomEvent, Track, createLocalTracks } = LivekitClient;
-    let room, micEnabled = true, camEnabled = true;
-    let timerInterval, seconds = 0;
+<script>
+  const { Room, RoomEvent, Track, createLocalTracks } = LivekitClient;
+  let room, micOn = true, camOn = true;
+  let timerInterval, seconds = 0;
+  let swapped = false;
 
-    // Timer
-    function startTimer() {
-      document.getElementById('timer').style.display = 'block';
-      timerInterval = setInterval(() => {
-        seconds++;
-        const m = String(Math.floor(seconds / 60)).padStart(2, '0');
-        const s = String(seconds % 60).padStart(2, '0');
-        document.getElementById('timer').textContent = m + ':' + s;
-      }, 1000);
+  // slotA = remote au départ, slotB = local au départ
+  let remoteSlot = 'slotA';
+  let localSlot  = 'slotB';
+
+  function swapSlots() {
+    swapped = !swapped;
+    const a = document.getElementById('slotA');
+    const b = document.getElementById('slotB');
+
+    if (swapped) {
+      // slotA devient pip, slotB devient main
+      a.className = 'video-slot slot-pip';
+      a.onclick = swapSlots;
+      b.className = 'video-slot slot-main';
+      b.onclick = null;
+    } else {
+      // retour état initial
+      a.className = 'video-slot slot-main';
+      a.onclick = null;
+      b.className = 'video-slot slot-pip';
+      b.onclick = swapSlots;
     }
+  }
 
-    // Swap vidéos au clic
-    document.getElementById('local-wrap').onclick = () => {
-      document.body.classList.toggle('swapped');
-    };
+  function attachRemoteVideo(track, identity) {
+    const slot = document.getElementById('slotA');
+    slot.innerHTML = '';
+    const el = track.attach();
+    slot.appendChild(el);
+    document.getElementById('remote-name').textContent = identity;
+    document.getElementById('remote-name').style.display = 'block';
+    startTimer();
+  }
 
-    // Rejoindre
-    document.getElementById('btn-join').onclick = async () => {
-      const url = document.getElementById('url').value.trim();
-      const token = document.getElementById('token').value.trim();
-      if (!token) { alert('Token manquant'); return; }
+  function attachLocalVideo(track) {
+    const slot = document.getElementById('slotB');
+    slot.innerHTML = '';
+    const el = track.attach();
+    el.classList.add('local-video');
+    slot.appendChild(el);
+  }
 
-      document.getElementById('connect-screen').style.display = 'none';
-      document.getElementById('controls').style.display = 'flex';
+  function startTimer() {
+    document.getElementById('timer').style.display = 'block';
+    timerInterval = setInterval(() => {
+      seconds++;
+      const m = String(Math.floor(seconds / 60)).padStart(2, '0');
+      const s = String(seconds % 60).padStart(2, '0');
+      document.getElementById('timer').textContent = m + ':' + s;
+    }, 1000);
+  }
 
-      room = new Room();
+  document.getElementById('btn-join').onclick = async () => {
+    const url   = document.getElementById('url').value.trim();
+    const token = document.getElementById('token').value.trim();
+    if (!token) { alert('Token manquant'); return; }
 
-      room.on(RoomEvent.TrackSubscribed, (track, pub, participant) => {
-        if (track.kind === Track.Kind.Video) {
-          const remoteWrap = document.getElementById('remote-wrap');
-          remoteWrap.innerHTML = '';
-          const el = track.attach();
-          el.style.cssText = 'width:100%;height:100%;object-fit:cover;';
-          remoteWrap.appendChild(el);
-          document.getElementById('remote-name').textContent = participant.identity;
-          document.getElementById('remote-name').style.display = 'block';
-          startTimer();
-        }
-        if (track.kind === Track.Kind.Audio) {
-          document.body.appendChild(track.attach());
-        }
-      });
+    document.getElementById('connect-screen').style.display = 'none';
+    document.getElementById('controls').style.display = 'flex';
 
-      room.on(RoomEvent.TrackUnsubscribed, () => {
-        document.getElementById('remote-wrap').innerHTML = `
-          <div class="no-video">
-            <div class="avatar-big">👤</div>
-            <span>Parti...</span>
-          </div>`;
-        document.getElementById('remote-name').style.display = 'none';
-        clearInterval(timerInterval);
-      });
+    room = new Room();
 
-      await room.connect(url, token);
-
-      const tracks = await createLocalTracks({ audio: true, video: true });
-      for (const track of tracks) {
-        await room.localParticipant.publishTrack(track);
-        if (track.kind === Track.Kind.Video) {
-          const localWrap = document.getElementById('local-wrap');
-          const el = track.attach();
-          localWrap.appendChild(el);
-        }
+    room.on(RoomEvent.TrackSubscribed, (track, pub, participant) => {
+      if (track.kind === Track.Kind.Video) {
+        attachRemoteVideo(track, participant.identity);
       }
-    };
+      if (track.kind === Track.Kind.Audio) {
+        document.body.appendChild(track.attach());
+      }
+    });
 
-    // Micro
-    document.getElementById('btn-mic').onclick = async () => {
-      micEnabled = !micEnabled;
-      await room.localParticipant.setMicrophoneEnabled(micEnabled);
-      document.getElementById('btn-mic').classList.toggle('off', !micEnabled);
-    };
-
-    // Caméra
-    document.getElementById('btn-cam').onclick = async () => {
-      camEnabled = !camEnabled;
-      await room.localParticipant.setCameraEnabled(camEnabled);
-      document.getElementById('btn-cam').classList.toggle('off', !camEnabled);
-    };
-
-    // Raccrocher
-    document.getElementById('btn-end').onclick = async () => {
-      if (room) await room.disconnect();
-      clearInterval(timerInterval);
-      seconds = 0;
-      document.getElementById('remote-wrap').innerHTML = `
-        <div class="no-video">
-          <div class="avatar-big">👤</div>
-          <span>En attente...</span>
+    room.on(RoomEvent.TrackUnsubscribed, () => {
+      document.getElementById('slotA').innerHTML = `
+        <div class="no-video-placeholder">
+          <div class="avatar-circle">👤</div>
+          <span>Parti...</span>
         </div>`;
-      document.getElementById('local-wrap').innerHTML = '';
-      document.getElementById('controls').style.display = 'none';
       document.getElementById('remote-name').style.display = 'none';
-      document.getElementById('timer').style.display = 'none';
-      document.getElementById('connect-screen').style.display = 'flex';
-    };
-  </script>
+      clearInterval(timerInterval);
+    });
+
+    await room.connect(url, token);
+
+    const tracks = await createLocalTracks({ audio: true, video: true });
+    for (const track of tracks) {
+      await room.localParticipant.publishTrack(track);
+      if (track.kind === Track.Kind.Video) attachLocalVideo(track);
+    }
+  };
+
+  document.getElementById('btn-mic').onclick = async () => {
+    micOn = !micOn;
+    await room.localParticipant.setMicrophoneEnabled(micOn);
+    document.getElementById('btn-mic').className = 'ctrl-btn ' + (micOn ? 'normal' : 'off');
+  };
+
+  document.getElementById('btn-cam').onclick = async () => {
+    camOn = !camOn;
+    await room.localParticipant.setCameraEnabled(camOn);
+    document.getElementById('btn-cam').className = 'ctrl-btn ' + (camOn ? 'normal' : 'off');
+  };
+
+  document.getElementById('btn-end').onclick = async () => {
+    if (room) await room.disconnect();
+    clearInterval(timerInterval); seconds = 0;
+    document.getElementById('slotA').innerHTML = `
+      <div class="no-video-placeholder">
+        <div class="avatar-circle">👤</div>
+        <span>En attente...</span>
+      </div>`;
+    document.getElementById('slotB').innerHTML = '';
+    document.getElementById('controls').style.display = 'none';
+    document.getElementById('remote-name').style.display = 'none';
+    document.getElementById('timer').style.display = 'none';
+    document.getElementById('connect-screen').style.display = 'flex';
+    // reset swap
+    if (swapped) swapSlots();
+  };
+</script>
 </body>
 </html>
