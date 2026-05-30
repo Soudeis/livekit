@@ -10,9 +10,7 @@
     body {
       background: #000;
       font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
-      height: 100dvh;
-      overflow: hidden;
-      position: relative;
+      height: 100dvh; overflow: hidden; position: relative;
     }
 
     /* ── ÉCRAN ACCUEIL ── */
@@ -31,10 +29,7 @@
       padding: 14px 16px; font-size: 15px; outline: none;
     }
     #connect-screen textarea { height: 88px; resize: none; }
-
-    .call-type {
-      display: flex; gap: 10px; width: 100%; max-width: 420px;
-    }
+    .call-type { display: flex; gap: 10px; width: 100%; max-width: 420px; }
     .call-type-btn {
       flex: 1; padding: 14px 8px;
       border-radius: 14px; border: 2px solid #3a3a3c;
@@ -42,24 +37,117 @@
       font-size: 13px; font-weight: 600;
       cursor: pointer; text-align: center;
       transition: all 0.2s;
-      display: flex; flex-direction: column;
-      align-items: center; gap: 8px;
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
     }
     .call-type-btn .icon { font-size: 26px; }
     .call-type-btn.selected { border-color: #25d366; background: #0d2e1a; }
     .call-type-btn:active { transform: scale(0.97); }
-
     #btn-join {
       width: 100%; max-width: 420px;
       background: #25d366; color: #fff; border: none;
       border-radius: 14px; padding: 16px;
       font-size: 17px; font-weight: 600; cursor: pointer;
-      transition: opacity 0.2s; opacity: 0.4;
-      pointer-events: none;
+      transition: opacity 0.2s; opacity: 0.4; pointer-events: none;
     }
     #btn-join.ready { opacity: 1; pointer-events: all; }
-    #btn-join:active { opacity: 0.8; }
     #connect-screen .hint { color: #555; font-size: 13px; text-align: center; }
+
+    /* ── ÉCRAN APPEL SORTANT ── */
+    #outgoing-screen {
+      position: absolute; inset: 0;
+      background: linear-gradient(160deg, #0a1628 0%, #0d2e1a 100%);
+      display: none; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 20px; z-index: 90;
+    }
+    .calling-avatar {
+      width: 120px; height: 120px; border-radius: 50%;
+      background: #2a2a3e;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 52px; position: relative;
+    }
+    /* Cercles animés autour de l'avatar */
+    .calling-avatar::before,
+    .calling-avatar::after {
+      content: '';
+      position: absolute; border-radius: 50%;
+      border: 2px solid rgba(37,211,102,0.3);
+      animation: ripple 2s ease-out infinite;
+    }
+    .calling-avatar::before { width: 160px; height: 160px; animation-delay: 0s; }
+    .calling-avatar::after  { width: 200px; height: 200px; animation-delay: 0.5s; }
+    @keyframes ripple {
+      0%   { transform: scale(0.8); opacity: 1; }
+      100% { transform: scale(1.2); opacity: 0; }
+    }
+    .calling-name { color: #fff; font-size: 28px; font-weight: 700; }
+    .calling-status { color: rgba(255,255,255,0.5); font-size: 16px; }
+    .calling-dots span {
+      animation: blink 1.4s infinite;
+      color: rgba(255,255,255,0.5); font-size: 16px;
+    }
+    .calling-dots span:nth-child(2) { animation-delay: 0.2s; }
+    .calling-dots span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes blink { 0%,80%,100% { opacity: 0; } 40% { opacity: 1; } }
+
+    #btn-cancel-call {
+      width: 68px; height: 68px; border-radius: 50%;
+      background: #ff3b30; border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      margin-top: 20px;
+    }
+    #btn-cancel-call svg { width: 28px; height: 28px; fill: #fff; }
+
+    /* ── ÉCRAN APPEL ENTRANT ── */
+    #incoming-screen {
+      position: absolute; inset: 0;
+      background: linear-gradient(160deg, #0a1628 0%, #1a0d2e 100%);
+      display: none; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 20px; z-index: 95;
+      animation: slideUp 0.4s ease-out;
+    }
+    @keyframes slideUp {
+      from { transform: translateY(100%); opacity: 0; }
+      to   { transform: translateY(0); opacity: 1; }
+    }
+    .incoming-avatar {
+      width: 120px; height: 120px; border-radius: 50%;
+      background: #2a2a3e;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 52px; position: relative;
+    }
+    .incoming-avatar::before,
+    .incoming-avatar::after {
+      content: '';
+      position: absolute; border-radius: 50%;
+      border: 2px solid rgba(100,100,255,0.3);
+      animation: ripple-blue 2s ease-out infinite;
+    }
+    .incoming-avatar::before { width: 160px; height: 160px; }
+    .incoming-avatar::after  { width: 200px; height: 200px; animation-delay: 0.5s; }
+    @keyframes ripple-blue {
+      0%   { transform: scale(0.8); opacity: 1; }
+      100% { transform: scale(1.2); opacity: 0; }
+    }
+    .incoming-name { color: #fff; font-size: 28px; font-weight: 700; }
+    .incoming-type { color: rgba(255,255,255,0.5); font-size: 16px; }
+
+    .incoming-actions {
+      display: flex; gap: 60px; margin-top: 20px;
+    }
+    .btn-accept, .btn-decline {
+      width: 72px; height: 72px; border-radius: 50%;
+      border: none; cursor: pointer;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 4px;
+      transition: transform 0.15s;
+    }
+    .btn-accept:active, .btn-decline:active { transform: scale(0.9); }
+    .btn-accept { background: #25d366; }
+    .btn-decline { background: #ff3b30; }
+    .btn-accept svg, .btn-decline svg { width: 28px; height: 28px; fill: #fff; }
+    .btn-label { color: rgba(255,255,255,0.7); font-size: 12px; margin-top: 8px; }
 
     /* ── VUE APPEL ── */
     .video-slot {
@@ -67,25 +155,19 @@
       transition: all 0.35s cubic-bezier(.4,0,.2,1);
     }
     .video-slot video { width: 100%; height: 100%; object-fit: cover; }
-
     .slot-main { inset: 0; border-radius: 0; z-index: 5; }
     .slot-pip {
       bottom: 140px; right: 16px;
       width: 110px; height: 160px;
-      border-radius: 18px; z-index: 20;
-      cursor: pointer;
+      border-radius: 18px; z-index: 20; cursor: pointer;
       border: 2px solid rgba(255,255,255,0.2);
       box-shadow: 0 8px 32px rgba(0,0,0,0.6);
     }
     .slot-pip:hover { border-color: rgba(255,255,255,0.45); }
-
-    /* En mode partage écran : video en letterbox */
     .slot-main.screen-mode video { object-fit: contain; background: #000; }
-
     .local-video { transform: scaleX(-1); }
     .screen-video { transform: none !important; }
 
-    /* Fond appel audio */
     #audio-bg {
       position: absolute; inset: 0;
       background: linear-gradient(160deg, #0d1b2a 0%, #1a1a2e 100%);
@@ -96,16 +178,12 @@
     #audio-bg .audio-avatar {
       width: 110px; height: 110px; border-radius: 50%;
       background: #2a2a3e;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 48px;
+      display: flex; align-items: center; justify-content: center; font-size: 48px;
       box-shadow: 0 0 0 12px rgba(37,211,102,0.1), 0 0 0 24px rgba(37,211,102,0.05);
     }
     #audio-bg .audio-name { color: #fff; font-size: 22px; font-weight: 600; }
     #audio-bg .audio-status { color: rgba(255,255,255,0.5); font-size: 14px; }
-
-    .wave {
-      display: flex; gap: 5px; align-items: center; height: 30px;
-    }
+    .wave { display: flex; gap: 5px; align-items: center; height: 30px; }
     .wave span {
       display: block; width: 4px; border-radius: 2px;
       background: #25d366; animation: wave 1.2s ease-in-out infinite;
@@ -115,10 +193,7 @@
     .wave span:nth-child(3) { animation-delay: 0.3s; }
     .wave span:nth-child(4) { animation-delay: 0.45s; }
     .wave span:nth-child(5) { animation-delay: 0.6s; }
-    @keyframes wave {
-      0%, 100% { height: 6px; }
-      50% { height: 24px; }
-    }
+    @keyframes wave { 0%,100% { height: 6px; } 50% { height: 24px; } }
 
     .no-video-placeholder {
       width: 100%; height: 100%;
@@ -129,8 +204,7 @@
     .avatar-circle {
       width: 90px; height: 90px; border-radius: 50%;
       background: #2a2a2a;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 36px;
+      display: flex; align-items: center; justify-content: center; font-size: 36px;
     }
 
     #remote-name {
@@ -153,8 +227,6 @@
       font-size: 12px; z-index: 10; display: none;
       backdrop-filter: blur(8px);
     }
-
-    /* Bandeau partage écran */
     #screen-banner {
       position: absolute; top: 0; left: 0; right: 0;
       background: rgba(37,211,102,0.15);
@@ -167,8 +239,7 @@
     #controls {
       position: absolute; bottom: 0; left: 0; right: 0;
       height: 120px; display: none;
-      align-items: center; justify-content: center;
-      gap: 20px;
+      align-items: center; justify-content: center; gap: 20px;
       background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%);
       z-index: 30; padding-bottom: 16px;
     }
@@ -180,7 +251,6 @@
     .ctrl-btn:active { transform: scale(0.88); }
     .ctrl-btn.normal { background: rgba(255,255,255,0.2); }
     .ctrl-btn.off    { background: rgba(255,255,255,0.08); }
-    .ctrl-btn.active { background: #25d366; }
     .ctrl-btn.end    { background: #ff3b30; width: 68px; height: 68px; }
     .ctrl-btn svg    { width: 22px; height: 22px; fill: #fff; }
     .ctrl-btn.end svg { width: 26px; height: 26px; }
@@ -194,24 +264,54 @@
     <h1>📞 LiveKit</h1>
     <input id="url" value="wss://monlivekit.duckdns.org" />
     <textarea id="token" placeholder="Colle ton token ici..."></textarea>
-
     <div class="call-type">
       <div class="call-type-btn" id="btn-video-type" onclick="selectType('video')">
-        <span class="icon">📹</span>
-        Vidéo
+        <span class="icon">📹</span>Vidéo
       </div>
       <div class="call-type-btn" id="btn-audio-type" onclick="selectType('audio')">
-        <span class="icon">🎙️</span>
-        Vocal
+        <span class="icon">🎙️</span>Vocal
       </div>
       <div class="call-type-btn" id="btn-screen-type" onclick="selectType('screen')">
-        <span class="icon">🖥️</span>
-        Écran
+        <span class="icon">🖥️</span>Écran
       </div>
     </div>
-
-    <button id="btn-join">Rejoindre</button>
+    <button id="btn-join">Appeler</button>
     <p class="hint">Appuie sur ta vidéo pour échanger les vues</p>
+  </div>
+
+  <!-- ── ÉCRAN APPEL SORTANT ── -->
+  <div id="outgoing-screen">
+    <div class="calling-avatar">👤</div>
+    <div class="calling-name" id="outgoing-name">Utilisateur</div>
+    <div class="calling-status">
+      Appel en cours<span class="calling-dots">
+        <span>.</span><span>.</span><span>.</span>
+      </span>
+    </div>
+    <button id="btn-cancel-call">
+      <svg viewBox="0 0 24 24"><path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1L6.6 10.8z"/></svg>
+    </button>
+  </div>
+
+  <!-- ── ÉCRAN APPEL ENTRANT ── -->
+  <div id="incoming-screen">
+    <div class="incoming-avatar">👤</div>
+    <div class="incoming-name" id="incoming-name">Inconnu</div>
+    <div class="incoming-type" id="incoming-type">Appel vidéo entrant</div>
+    <div class="incoming-actions">
+      <div style="display:flex;flex-direction:column;align-items:center">
+        <button class="btn-decline" id="btn-decline">
+          <svg viewBox="0 0 24 24"><path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1L6.6 10.8z"/></svg>
+        </button>
+        <div class="btn-label">Refuser</div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center">
+        <button class="btn-accept" id="btn-accept">
+          <svg viewBox="0 0 24 24"><path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1L6.6 10.8z"/></svg>
+        </button>
+        <div class="btn-label">Accepter</div>
+      </div>
+    </div>
   </div>
 
   <!-- ── VUE APPEL ── -->
@@ -237,25 +337,17 @@
   </div>
   <div class="video-slot slot-pip" id="slotB" onclick="swapSlots()"></div>
 
-  <!-- Contrôles -->
   <div id="controls">
-    <!-- Micro -->
-    <button class="ctrl-btn normal" id="btn-mic" title="Micro">
+    <button class="ctrl-btn normal" id="btn-mic">
       <svg viewBox="0 0 24 24"><path d="M12 1a4 4 0 0 1 4 4v6a4 4 0 0 1-8 0V5a4 4 0 0 1 4-4zm-1.5 15.93A8 8 0 0 1 4.07 11H2a10 10 0 0 0 9 9.93V23h2v-2.07A10 10 0 0 0 22 11h-2.07a8 8 0 0 1-6.43 5.93z"/></svg>
     </button>
-
-    <!-- Partage écran (visible seulement en mode screen) -->
-    <button class="ctrl-btn normal" id="btn-screen" title="Partage écran" style="display:none">
+    <button class="ctrl-btn normal" id="btn-screen" style="display:none">
       <svg viewBox="0 0 24 24"><path d="M20 3H4a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h7v2H8v2h8v-2h-3v-2h7a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zm0 13H4V5h16v11z"/></svg>
     </button>
-
-    <!-- Raccrocher -->
     <button class="ctrl-btn end" id="btn-end">
       <svg viewBox="0 0 24 24"><path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1L6.6 10.8z"/></svg>
     </button>
-
-    <!-- Caméra (visible seulement en mode vidéo) -->
-    <button class="ctrl-btn normal" id="btn-cam" title="Caméra" style="display:none">
+    <button class="ctrl-btn normal" id="btn-cam" style="display:none">
       <svg viewBox="0 0 24 24"><path d="M17 10.5V7a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3.5l4 4v-11l-4 4z"/></svg>
     </button>
   </div>
@@ -267,13 +359,62 @@
   let swapped = false;
   let callType = null;
   let screenTrack = null;
+  let ringtoneInterval = null;
+  let pendingCallType = null;
+
+  // ── Sonnerie avec Web Audio API ──
+  function playRingtone(type = 'incoming') {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    let step = 0;
+
+    function ring() {
+      if (type === 'incoming') {
+        // Sonnerie style téléphone : deux bips
+        [0, 0.3].forEach(delay => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.frequency.value = 480;
+          osc.type = 'sine';
+          gain.gain.setValueAtTime(0.3, ctx.currentTime + delay);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + 0.25);
+          osc.start(ctx.currentTime + delay);
+          osc.stop(ctx.currentTime + delay + 0.25);
+        });
+      } else {
+        // Sonnerie appel sortant : bip long
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.frequency.value = 425;
+        osc.type = 'sine';
+        gain.gain.setValueAtTime(0.2, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.8);
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + 0.8);
+      }
+    }
+
+    ring();
+    ringtoneInterval = setInterval(ring, type === 'incoming' ? 3000 : 4000);
+    return ctx;
+  }
+
+  function stopRingtone() {
+    if (ringtoneInterval) {
+      clearInterval(ringtoneInterval);
+      ringtoneInterval = null;
+    }
+  }
 
   // ── Sélection type d'appel ──
   function selectType(type) {
     callType = type;
-    document.getElementById('btn-video-type').classList.toggle('selected', type === 'video');
-    document.getElementById('btn-audio-type').classList.toggle('selected', type === 'audio');
-    document.getElementById('btn-screen-type').classList.toggle('selected', type === 'screen');
+    ['video','audio','screen'].forEach(t =>
+      document.getElementById('btn-' + t + '-type').classList.toggle('selected', t === type)
+    );
     if (document.getElementById('token').value.trim()) {
       document.getElementById('btn-join').classList.add('ready');
     }
@@ -314,39 +455,16 @@
     }, 1000);
   }
 
-  // ── Rejoindre ──
-  document.getElementById('btn-join').onclick = async () => {
-    const url   = document.getElementById('url').value.trim();
-    const token = document.getElementById('token').value.trim();
-    if (!token || !callType) return;
-
-    document.getElementById('connect-screen').style.display = 'none';
-    document.getElementById('controls').style.display = 'flex';
-
-    // Badge
-    const badges = { video: '📹 Vidéo', audio: '🎙️ Vocal', screen: '🖥️ Écran' };
-    const badge = document.getElementById('call-badge');
-    badge.textContent = badges[callType];
-    badge.style.display = 'block';
-
-    // Boutons selon le type
-    if (callType === 'video') {
-      document.getElementById('btn-cam').style.display = 'flex';
-    }
-    if (callType === 'screen') {
-      document.getElementById('btn-screen').style.display = 'flex';
-      document.getElementById('screen-banner').style.display = 'block';
-      document.getElementById('slotA').classList.add('screen-mode');
-    }
-    if (callType === 'audio') {
-      document.getElementById('audio-bg').style.display = 'flex';
-    }
-
+  // ── Rejoindre et connecter à la room ──
+  async function connectToRoom(url, token) {
     room = new Room();
 
-    // ── Événements remote ──
-    room.on(RoomEvent.TrackSubscribed, (track, pub, participant) => {
+    room.on(RoomEvent.ParticipantConnected, (participant) => {
+      // L'autre a rejoint → stopper la sonnerie sortante
+      stopRingtone();
+    });
 
+    room.on(RoomEvent.TrackSubscribed, (track, pub, participant) => {
       if (track.kind === Track.Kind.Video) {
         const slot = document.getElementById('slotA');
         slot.innerHTML = '';
@@ -357,7 +475,6 @@
         document.getElementById('remote-name').style.display = 'block';
         startTimer();
       }
-
       if (track.kind === Track.Kind.Audio) {
         document.body.appendChild(track.attach());
         if (callType === 'audio') {
@@ -369,12 +486,25 @@
       }
     });
 
-    room.on(RoomEvent.TrackUnsubscribed, (track, pub, participant) => {
+    // Détection appel entrant via DataChannel
+    room.on(RoomEvent.DataReceived, (data, participant) => {
+      const msg = JSON.parse(new TextDecoder().decode(data));
+      if (msg.type === 'incoming_call') {
+        pendingCallType = msg.callType;
+        showIncomingCall(participant.identity, msg.callType);
+      }
+      if (msg.type === 'call_declined') {
+        stopRingtone();
+        showNotification('Appel refusé');
+        resetToHome();
+      }
+    });
+
+    room.on(RoomEvent.TrackUnsubscribed, () => {
       if (callType !== 'audio') {
         document.getElementById('slotA').innerHTML = `
           <div class="no-video-placeholder">
-            <div class="avatar-circle">👤</div>
-            <span>Parti...</span>
+            <div class="avatar-circle">👤</div><span>Parti...</span>
           </div>`;
         document.getElementById('remote-name').style.display = 'none';
       } else {
@@ -386,8 +516,93 @@
     });
 
     await room.connect(url, token);
+  }
 
-    // ── Publication des tracks selon le type ──
+  // ── Afficher sonnerie appel entrant ──
+  function showIncomingCall(callerName, type) {
+    stopRingtone();
+    playRingtone('incoming');
+    document.getElementById('incoming-name').textContent = callerName;
+    const types = { video: '📹 Appel vidéo entrant', audio: '🎙️ Appel vocal entrant', screen: '🖥️ Partage d\'écran entrant' };
+    document.getElementById('incoming-type').textContent = types[type] || 'Appel entrant';
+    document.getElementById('incoming-screen').style.display = 'flex';
+  }
+
+  // ── Appel sortant ──
+  document.getElementById('btn-join').onclick = async () => {
+    const url   = document.getElementById('url').value.trim();
+    const token = document.getElementById('token').value.trim();
+    if (!token || !callType) return;
+
+    document.getElementById('connect-screen').style.display = 'none';
+
+    // Afficher écran appel sortant + sonnerie
+    document.getElementById('outgoing-name').textContent = 'test-room';
+    document.getElementById('outgoing-screen').style.display = 'flex';
+    playRingtone('outgoing');
+
+    await connectToRoom(url, token);
+
+    // Envoyer signal "incoming_call" aux autres participants
+    const msg = JSON.stringify({ type: 'incoming_call', callType });
+    await room.localParticipant.publishData(
+      new TextEncoder().encode(msg), { reliable: true }
+    );
+
+    // Passer à l'écran d'appel
+    document.getElementById('outgoing-screen').style.display = 'none';
+    startCall();
+  };
+
+  // ── Annuler appel sortant ──
+  document.getElementById('btn-cancel-call').onclick = async () => {
+    stopRingtone();
+    if (room) {
+      const msg = JSON.stringify({ type: 'call_declined' });
+      await room.localParticipant.publishData(new TextEncoder().encode(msg), { reliable: true });
+      await room.disconnect();
+    }
+    document.getElementById('outgoing-screen').style.display = 'none';
+    document.getElementById('connect-screen').style.display = 'flex';
+  };
+
+  // ── Accepter appel entrant ──
+  document.getElementById('btn-accept').onclick = async () => {
+    stopRingtone();
+    if (pendingCallType) callType = pendingCallType;
+    document.getElementById('incoming-screen').style.display = 'none';
+    startCall();
+  };
+
+  // ── Refuser appel entrant ──
+  document.getElementById('btn-decline').onclick = async () => {
+    stopRingtone();
+    if (room) {
+      const msg = JSON.stringify({ type: 'call_declined' });
+      await room.localParticipant.publishData(new TextEncoder().encode(msg), { reliable: true });
+      await room.disconnect();
+    }
+    document.getElementById('incoming-screen').style.display = 'none';
+    document.getElementById('connect-screen').style.display = 'flex';
+  };
+
+  // ── Démarrer l'appel (publier les tracks) ──
+  async function startCall() {
+    document.getElementById('controls').style.display = 'flex';
+
+    const badges = { video: '📹 Vidéo', audio: '🎙️ Vocal', screen: '🖥️ Écran' };
+    const badge = document.getElementById('call-badge');
+    badge.textContent = badges[callType];
+    badge.style.display = 'block';
+
+    if (callType === 'video') document.getElementById('btn-cam').style.display = 'flex';
+    if (callType === 'screen') {
+      document.getElementById('btn-screen').style.display = 'flex';
+      document.getElementById('screen-banner').style.display = 'block';
+      document.getElementById('slotA').classList.add('screen-mode');
+    }
+    if (callType === 'audio') document.getElementById('audio-bg').style.display = 'flex';
+
     if (callType === 'video') {
       const tracks = await createLocalTracks({ audio: true, video: true });
       for (const track of tracks) {
@@ -404,59 +619,52 @@
 
     if (callType === 'audio') {
       const tracks = await createLocalTracks({ audio: true, video: false });
-      for (const track of tracks) {
-        await room.localParticipant.publishTrack(track);
-      }
+      for (const track of tracks) await room.localParticipant.publishTrack(track);
     }
 
     if (callType === 'screen') {
-      // Micro en même temps que l'écran
       const audioTracks = await createLocalTracks({ audio: true, video: false });
-      for (const track of audioTracks) {
-        await room.localParticipant.publishTrack(track);
-      }
-
-      // Partage écran
+      for (const track of audioTracks) await room.localParticipant.publishTrack(track);
       const sTracks = await createLocalScreenTracks({ audio: false });
       for (const track of sTracks) {
         screenTrack = track;
         await room.localParticipant.publishTrack(track);
-        // Afficher son propre écran partagé en pip
         const slot = document.getElementById('slotB');
         slot.innerHTML = '';
         const el = track.attach();
         el.classList.add('screen-video');
         el.style.cssText = 'width:100%;height:100%;object-fit:contain;background:#000';
         slot.appendChild(el);
+        screenTrack.mediaStreamTrack.addEventListener('ended', () => stopScreenShare());
       }
-
-      // Si l'utilisateur arrête le partage depuis le navigateur
-      screenTrack?.mediaStreamTrack.addEventListener('ended', () => {
-        stopScreenShare();
-      });
     }
-  };
+  }
+
+  // ── Notification toast ──
+  function showNotification(msg) {
+    const n = document.createElement('div');
+    n.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:rgba(255,59,48,0.9);color:#fff;padding:10px 20px;border-radius:20px;z-index:999;font-size:14px;';
+    n.textContent = msg;
+    document.body.appendChild(n);
+    setTimeout(() => n.remove(), 3000);
+  }
 
   // ── Arrêter partage écran ──
   async function stopScreenShare() {
     if (screenTrack) {
       await room.localParticipant.unpublishTrack(screenTrack);
-      screenTrack.stop();
-      screenTrack = null;
+      screenTrack.stop(); screenTrack = null;
     }
     document.getElementById('slotB').innerHTML = '';
     document.getElementById('screen-banner').style.display = 'none';
-    document.getElementById('btn-screen').classList.remove('active');
-    document.getElementById('btn-screen').classList.add('off');
+    document.getElementById('btn-screen').classList.replace('normal', 'off');
     screenOn = false;
   }
 
-  // ── Bouton partage écran (toggle) ──
   document.getElementById('btn-screen').onclick = async () => {
     if (screenOn) {
       await stopScreenShare();
     } else {
-      // Relancer le partage
       const sTracks = await createLocalScreenTracks({ audio: false });
       for (const track of sTracks) {
         screenTrack = track;
@@ -470,8 +678,7 @@
         screenTrack.mediaStreamTrack.addEventListener('ended', () => stopScreenShare());
       }
       document.getElementById('screen-banner').style.display = 'block';
-      document.getElementById('btn-screen').classList.remove('off');
-      document.getElementById('btn-screen').classList.add('normal');
+      document.getElementById('btn-screen').classList.replace('off', 'normal');
       screenOn = true;
     }
   };
@@ -490,17 +697,14 @@
     document.getElementById('btn-cam').className = 'ctrl-btn ' + (camOn ? 'normal' : 'off');
   };
 
-  // ── Raccrocher ──
-  document.getElementById('btn-end').onclick = async () => {
-    if (screenTrack) { screenTrack.stop(); screenTrack = null; }
-    if (room) await room.disconnect();
+  // ── Reset home ──
+  function resetToHome() {
+    stopRingtone();
     clearInterval(timerInterval); seconds = 0;
-    callType = null; screenOn = true;
-
+    callType = null; screenOn = true; pendingCallType = null;
     document.getElementById('slotA').innerHTML = `
       <div class="no-video-placeholder">
-        <div class="avatar-circle">👤</div>
-        <span>En attente...</span>
+        <div class="avatar-circle">👤</div><span>En attente...</span>
       </div>`;
     document.getElementById('slotA').classList.remove('screen-mode');
     document.getElementById('slotB').innerHTML = '';
@@ -510,17 +714,23 @@
     document.getElementById('call-badge').style.display = 'none';
     document.getElementById('screen-banner').style.display = 'none';
     document.getElementById('audio-bg').style.display = 'none';
-    document.getElementById('audio-status').textContent = 'Connexion...';
     document.getElementById('wave').style.display = 'none';
     document.getElementById('btn-cam').style.display = 'none';
     document.getElementById('btn-screen').style.display = 'none';
     document.getElementById('btn-screen').className = 'ctrl-btn normal';
-    ['btn-video-type','btn-audio-type','btn-screen-type'].forEach(id =>
-      document.getElementById(id).classList.remove('selected')
+    ['video','audio','screen'].forEach(t =>
+      document.getElementById('btn-' + t + '-type').classList.remove('selected')
     );
     document.getElementById('btn-join').classList.remove('ready');
     document.getElementById('connect-screen').style.display = 'flex';
     if (swapped) swapSlots();
+  }
+
+  // ── Raccrocher ──
+  document.getElementById('btn-end').onclick = async () => {
+    if (screenTrack) { screenTrack.stop(); screenTrack = null; }
+    if (room) await room.disconnect();
+    resetToHome();
   };
 </script>
 </body>
