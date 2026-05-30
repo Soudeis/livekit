@@ -134,4 +134,394 @@
     }
 
     #remote-name {
-      position: abso
+      position: absolute; top: 16px; left: 50%;
+      transform: translateX(-50%);
+      color: #fff; font-size: 17px; font-weight: 600;
+      z-index: 10; display: none;
+      text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+    }
+    #timer {
+      position: absolute; top: 44px; left: 50%;
+      transform: translateX(-50%);
+      color: rgba(255,255,255,0.7); font-size: 14px;
+      z-index: 10; display: none;
+    }
+    #call-badge {
+      position: absolute; top: 16px; right: 16px;
+      background: rgba(0,0,0,0.5); border-radius: 20px;
+      padding: 4px 12px; color: rgba(255,255,255,0.7);
+      font-size: 12px; z-index: 10; display: none;
+      backdrop-filter: blur(8px);
+    }
+
+    /* Bandeau partage écran */
+    #screen-banner {
+      position: absolute; top: 0; left: 0; right: 0;
+      background: rgba(37,211,102,0.15);
+      border-bottom: 1px solid rgba(37,211,102,0.3);
+      color: #25d366; font-size: 13px; font-weight: 600;
+      text-align: center; padding: 8px;
+      z-index: 25; display: none;
+    }
+
+    #controls {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      height: 120px; display: none;
+      align-items: center; justify-content: center;
+      gap: 20px;
+      background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%);
+      z-index: 30; padding-bottom: 16px;
+    }
+    .ctrl-btn {
+      width: 56px; height: 56px; border-radius: 50%; border: none;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: transform 0.15s, background 0.2s;
+    }
+    .ctrl-btn:active { transform: scale(0.88); }
+    .ctrl-btn.normal { background: rgba(255,255,255,0.2); }
+    .ctrl-btn.off    { background: rgba(255,255,255,0.08); }
+    .ctrl-btn.active { background: #25d366; }
+    .ctrl-btn.end    { background: #ff3b30; width: 68px; height: 68px; }
+    .ctrl-btn svg    { width: 22px; height: 22px; fill: #fff; }
+    .ctrl-btn.end svg { width: 26px; height: 26px; }
+    .ctrl-btn.off svg { opacity: 0.4; }
+  </style>
+</head>
+<body>
+
+  <!-- ── ÉCRAN ACCUEIL ── -->
+  <div id="connect-screen">
+    <h1>📞 LiveKit</h1>
+    <input id="url" value="wss://monlivekit.duckdns.org" />
+    <textarea id="token" placeholder="Colle ton token ici..."></textarea>
+
+    <div class="call-type">
+      <div class="call-type-btn" id="btn-video-type" onclick="selectType('video')">
+        <span class="icon">📹</span>
+        Vidéo
+      </div>
+      <div class="call-type-btn" id="btn-audio-type" onclick="selectType('audio')">
+        <span class="icon">🎙️</span>
+        Vocal
+      </div>
+      <div class="call-type-btn" id="btn-screen-type" onclick="selectType('screen')">
+        <span class="icon">🖥️</span>
+        Écran
+      </div>
+    </div>
+
+    <button id="btn-join">Rejoindre</button>
+    <p class="hint">Appuie sur ta vidéo pour échanger les vues</p>
+  </div>
+
+  <!-- ── VUE APPEL ── -->
+  <div id="screen-banner">🖥️ Partage d'écran en cours</div>
+  <div id="remote-name"></div>
+  <div id="timer"></div>
+  <div id="call-badge"></div>
+
+  <div id="audio-bg">
+    <div class="audio-avatar">👤</div>
+    <div class="audio-name" id="audio-remote-name">En attente...</div>
+    <div class="audio-status" id="audio-status">Connexion...</div>
+    <div class="wave" id="wave" style="display:none">
+      <span></span><span></span><span></span><span></span><span></span>
+    </div>
+  </div>
+
+  <div class="video-slot slot-main" id="slotA">
+    <div class="no-video-placeholder">
+      <div class="avatar-circle">👤</div>
+      <span>En attente...</span>
+    </div>
+  </div>
+  <div class="video-slot slot-pip" id="slotB" onclick="swapSlots()"></div>
+
+  <!-- Contrôles -->
+  <div id="controls">
+    <!-- Micro -->
+    <button class="ctrl-btn normal" id="btn-mic" title="Micro">
+      <svg viewBox="0 0 24 24"><path d="M12 1a4 4 0 0 1 4 4v6a4 4 0 0 1-8 0V5a4 4 0 0 1 4-4zm-1.5 15.93A8 8 0 0 1 4.07 11H2a10 10 0 0 0 9 9.93V23h2v-2.07A10 10 0 0 0 22 11h-2.07a8 8 0 0 1-6.43 5.93z"/></svg>
+    </button>
+
+    <!-- Partage écran (visible seulement en mode screen) -->
+    <button class="ctrl-btn normal" id="btn-screen" title="Partage écran" style="display:none">
+      <svg viewBox="0 0 24 24"><path d="M20 3H4a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h7v2H8v2h8v-2h-3v-2h7a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zm0 13H4V5h16v11z"/></svg>
+    </button>
+
+    <!-- Raccrocher -->
+    <button class="ctrl-btn end" id="btn-end">
+      <svg viewBox="0 0 24 24"><path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1L6.6 10.8z"/></svg>
+    </button>
+
+    <!-- Caméra (visible seulement en mode vidéo) -->
+    <button class="ctrl-btn normal" id="btn-cam" title="Caméra" style="display:none">
+      <svg viewBox="0 0 24 24"><path d="M17 10.5V7a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3.5l4 4v-11l-4 4z"/></svg>
+    </button>
+  </div>
+
+<script>
+  const { Room, RoomEvent, Track, createLocalTracks, createLocalScreenTracks } = LivekitClient;
+  let room, micOn = true, camOn = true, screenOn = true;
+  let timerInterval, seconds = 0;
+  let swapped = false;
+  let callType = null;
+  let screenTrack = null;
+
+  // ── Sélection type d'appel ──
+  function selectType(type) {
+    callType = type;
+    document.getElementById('btn-video-type').classList.toggle('selected', type === 'video');
+    document.getElementById('btn-audio-type').classList.toggle('selected', type === 'audio');
+    document.getElementById('btn-screen-type').classList.toggle('selected', type === 'screen');
+    if (document.getElementById('token').value.trim()) {
+      document.getElementById('btn-join').classList.add('ready');
+    }
+  }
+
+  document.getElementById('token').addEventListener('input', () => {
+    if (callType && document.getElementById('token').value.trim()) {
+      document.getElementById('btn-join').classList.add('ready');
+    } else {
+      document.getElementById('btn-join').classList.remove('ready');
+    }
+  });
+
+  // ── Swap vidéo ──
+  function swapSlots() {
+    swapped = !swapped;
+    const a = document.getElementById('slotA');
+    const b = document.getElementById('slotB');
+    if (swapped) {
+      a.className = 'video-slot slot-pip'; a.onclick = swapSlots;
+      b.className = 'video-slot slot-main' + (callType === 'screen' ? ' screen-mode' : '');
+      b.onclick = null;
+    } else {
+      a.className = 'video-slot slot-main' + (callType === 'screen' ? ' screen-mode' : '');
+      a.onclick = null;
+      b.className = 'video-slot slot-pip'; b.onclick = swapSlots;
+    }
+  }
+
+  // ── Timer ──
+  function startTimer() {
+    document.getElementById('timer').style.display = 'block';
+    timerInterval = setInterval(() => {
+      seconds++;
+      const m = String(Math.floor(seconds / 60)).padStart(2, '0');
+      const s = String(seconds % 60).padStart(2, '0');
+      document.getElementById('timer').textContent = m + ':' + s;
+    }, 1000);
+  }
+
+  // ── Rejoindre ──
+  document.getElementById('btn-join').onclick = async () => {
+    const url   = document.getElementById('url').value.trim();
+    const token = document.getElementById('token').value.trim();
+    if (!token || !callType) return;
+
+    document.getElementById('connect-screen').style.display = 'none';
+    document.getElementById('controls').style.display = 'flex';
+
+    // Badge
+    const badges = { video: '📹 Vidéo', audio: '🎙️ Vocal', screen: '🖥️ Écran' };
+    const badge = document.getElementById('call-badge');
+    badge.textContent = badges[callType];
+    badge.style.display = 'block';
+
+    // Boutons selon le type
+    if (callType === 'video') {
+      document.getElementById('btn-cam').style.display = 'flex';
+    }
+    if (callType === 'screen') {
+      document.getElementById('btn-screen').style.display = 'flex';
+      document.getElementById('screen-banner').style.display = 'block';
+      document.getElementById('slotA').classList.add('screen-mode');
+    }
+    if (callType === 'audio') {
+      document.getElementById('audio-bg').style.display = 'flex';
+    }
+
+    room = new Room();
+
+    // ── Événements remote ──
+    room.on(RoomEvent.TrackSubscribed, (track, pub, participant) => {
+
+      if (track.kind === Track.Kind.Video) {
+        const slot = document.getElementById('slotA');
+        slot.innerHTML = '';
+        const el = track.attach();
+        el.style.cssText = 'width:100%;height:100%;object-fit:' + (callType === 'screen' ? 'contain' : 'cover') + ';background:#000';
+        slot.appendChild(el);
+        document.getElementById('remote-name').textContent = participant.identity;
+        document.getElementById('remote-name').style.display = 'block';
+        startTimer();
+      }
+
+      if (track.kind === Track.Kind.Audio) {
+        document.body.appendChild(track.attach());
+        if (callType === 'audio') {
+          document.getElementById('audio-remote-name').textContent = participant.identity;
+          document.getElementById('audio-status').textContent = 'En communication';
+          document.getElementById('wave').style.display = 'flex';
+          startTimer();
+        }
+      }
+    });
+
+    room.on(RoomEvent.TrackUnsubscribed, (track, pub, participant) => {
+      if (callType !== 'audio') {
+        document.getElementById('slotA').innerHTML = `
+          <div class="no-video-placeholder">
+            <div class="avatar-circle">👤</div>
+            <span>Parti...</span>
+          </div>`;
+        document.getElementById('remote-name').style.display = 'none';
+      } else {
+        document.getElementById('audio-remote-name').textContent = 'Parti...';
+        document.getElementById('audio-status').textContent = '';
+        document.getElementById('wave').style.display = 'none';
+      }
+      clearInterval(timerInterval);
+    });
+
+    await room.connect(url, token);
+
+    // ── Publication des tracks selon le type ──
+    if (callType === 'video') {
+      const tracks = await createLocalTracks({ audio: true, video: true });
+      for (const track of tracks) {
+        await room.localParticipant.publishTrack(track);
+        if (track.kind === Track.Kind.Video) {
+          const slot = document.getElementById('slotB');
+          slot.innerHTML = '';
+          const el = track.attach();
+          el.classList.add('local-video');
+          slot.appendChild(el);
+        }
+      }
+    }
+
+    if (callType === 'audio') {
+      const tracks = await createLocalTracks({ audio: true, video: false });
+      for (const track of tracks) {
+        await room.localParticipant.publishTrack(track);
+      }
+    }
+
+    if (callType === 'screen') {
+      // Micro en même temps que l'écran
+      const audioTracks = await createLocalTracks({ audio: true, video: false });
+      for (const track of audioTracks) {
+        await room.localParticipant.publishTrack(track);
+      }
+
+      // Partage écran
+      const sTracks = await createLocalScreenTracks({ audio: false });
+      for (const track of sTracks) {
+        screenTrack = track;
+        await room.localParticipant.publishTrack(track);
+        // Afficher son propre écran partagé en pip
+        const slot = document.getElementById('slotB');
+        slot.innerHTML = '';
+        const el = track.attach();
+        el.classList.add('screen-video');
+        el.style.cssText = 'width:100%;height:100%;object-fit:contain;background:#000';
+        slot.appendChild(el);
+      }
+
+      // Si l'utilisateur arrête le partage depuis le navigateur
+      screenTrack?.mediaStreamTrack.addEventListener('ended', () => {
+        stopScreenShare();
+      });
+    }
+  };
+
+  // ── Arrêter partage écran ──
+  async function stopScreenShare() {
+    if (screenTrack) {
+      await room.localParticipant.unpublishTrack(screenTrack);
+      screenTrack.stop();
+      screenTrack = null;
+    }
+    document.getElementById('slotB').innerHTML = '';
+    document.getElementById('screen-banner').style.display = 'none';
+    document.getElementById('btn-screen').classList.remove('active');
+    document.getElementById('btn-screen').classList.add('off');
+    screenOn = false;
+  }
+
+  // ── Bouton partage écran (toggle) ──
+  document.getElementById('btn-screen').onclick = async () => {
+    if (screenOn) {
+      await stopScreenShare();
+    } else {
+      // Relancer le partage
+      const sTracks = await createLocalScreenTracks({ audio: false });
+      for (const track of sTracks) {
+        screenTrack = track;
+        await room.localParticipant.publishTrack(track);
+        const slot = document.getElementById('slotB');
+        slot.innerHTML = '';
+        const el = track.attach();
+        el.classList.add('screen-video');
+        el.style.cssText = 'width:100%;height:100%;object-fit:contain;background:#000';
+        slot.appendChild(el);
+        screenTrack.mediaStreamTrack.addEventListener('ended', () => stopScreenShare());
+      }
+      document.getElementById('screen-banner').style.display = 'block';
+      document.getElementById('btn-screen').classList.remove('off');
+      document.getElementById('btn-screen').classList.add('normal');
+      screenOn = true;
+    }
+  };
+
+  // ── Micro ──
+  document.getElementById('btn-mic').onclick = async () => {
+    micOn = !micOn;
+    await room.localParticipant.setMicrophoneEnabled(micOn);
+    document.getElementById('btn-mic').className = 'ctrl-btn ' + (micOn ? 'normal' : 'off');
+  };
+
+  // ── Caméra ──
+  document.getElementById('btn-cam').onclick = async () => {
+    camOn = !camOn;
+    await room.localParticipant.setCameraEnabled(camOn);
+    document.getElementById('btn-cam').className = 'ctrl-btn ' + (camOn ? 'normal' : 'off');
+  };
+
+  // ── Raccrocher ──
+  document.getElementById('btn-end').onclick = async () => {
+    if (screenTrack) { screenTrack.stop(); screenTrack = null; }
+    if (room) await room.disconnect();
+    clearInterval(timerInterval); seconds = 0;
+    callType = null; screenOn = true;
+
+    document.getElementById('slotA').innerHTML = `
+      <div class="no-video-placeholder">
+        <div class="avatar-circle">👤</div>
+        <span>En attente...</span>
+      </div>`;
+    document.getElementById('slotA').classList.remove('screen-mode');
+    document.getElementById('slotB').innerHTML = '';
+    document.getElementById('controls').style.display = 'none';
+    document.getElementById('remote-name').style.display = 'none';
+    document.getElementById('timer').style.display = 'none';
+    document.getElementById('call-badge').style.display = 'none';
+    document.getElementById('screen-banner').style.display = 'none';
+    document.getElementById('audio-bg').style.display = 'none';
+    document.getElementById('audio-status').textContent = 'Connexion...';
+    document.getElementById('wave').style.display = 'none';
+    document.getElementById('btn-cam').style.display = 'none';
+    document.getElementById('btn-screen').style.display = 'none';
+    document.getElementById('btn-screen').className = 'ctrl-btn normal';
+    ['btn-video-type','btn-audio-type','btn-screen-type'].forEach(id =>
+      document.getElementById(id).classList.remove('selected')
+    );
+    document.getElementById('btn-join').classList.remove('ready');
+    document.getElementById('connect-screen').style.display = 'flex';
+    if (swapped) swapSlots();
+  };
+</script>
+</body>
+</html>
